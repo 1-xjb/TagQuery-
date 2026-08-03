@@ -1,0 +1,61 @@
+# ============================================================
+# Spring Boot 主配置文件
+# 控制整个项目的运行参数
+# ============================================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tag-query-service
+
+  # --- 数据源配置：连接你的本地 MySQL ---
+  datasource:
+    url: jdbc:mysql://localhost:3306/tag_query?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root                    # 改成你的 MySQL 用户名
+    password: 88888888                    # 改成你的 MySQL 密码
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # --- Redis 配置 ---
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 50
+        max-idle: 10
+        min-idle: 5
+
+  # --- Flyway：自动建表 ---
+  flyway:
+    enabled: true                     # 开启 Flyway
+    locations: classpath:db/migration # SQL 脚本位置
+    baseline-on-migrate: true         # 对已有数据库也能用
+
+# --- MyBatis-Plus 配置 ---
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印 SQL（开发用）
+    map-underscore-to-camel-case: true                       # 下划线 → 驼峰（如 app_key → appKey）
+  global-config:
+    db-config:
+      id-type: auto                   # 主键自增
+
+# --- Prometheus Actuator ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus  # 暴露的端点
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# --- 日志级别 ---
+logging:
+  level:
+    com.platform.tagquery: DEBUG       # 自己代码的日志级别
+    org.mybatis: INFO                  # MyBatis 执行的 SQL

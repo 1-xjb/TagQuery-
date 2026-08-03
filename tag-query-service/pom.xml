@@ -26,6 +26,13 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!--
+        关闭增量编译。项目路径含不可见字符（TagQuery 目录名末尾的零宽空格 U+200B），
+        在 GBK 默认编码下无法写入编译状态文件，导致 "Error while storing the mojo status: Input length = 1"。
+        根治方案：重命名目录去掉零宽空格后可恢复增量编译。
+        -->
+        <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
+
         <!-- 依赖版本集中管理 -->
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <xxl-job.version>3.4.2</xxl-job.version>

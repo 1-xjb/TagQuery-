@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:7-alpine        # alpine 版体积小
+    container_name: tag-query-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
