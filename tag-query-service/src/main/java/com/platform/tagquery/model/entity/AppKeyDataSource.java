@@ -17,7 +17,7 @@ public class AppKeyDataSource {
     private Long appKeyId;
 
     /** Day 2 会由 BIGINT 改为 VARCHAR，先按 Long 写 */
-    private Long dataSourceId;
+    private String dataSourceId;
 
     private LocalDateTime createdAt;
 }
