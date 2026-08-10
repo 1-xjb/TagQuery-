@@ -4,12 +4,15 @@ package com.platform.tagquery.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.platform.tagquery.exception.BizException;
 import com.platform.tagquery.exception.ErrorCode;
+import com.platform.tagquery.middleware.RequestIdFilter;
 import com.platform.tagquery.model.entity.AppKey;
 import com.platform.tagquery.model.entity.AppKeyDataSource;
 import com.platform.tagquery.repository.mysql.AppKeyDataSourceMapper;
 import com.platform.tagquery.repository.mysql.AppKeyMapper;
 import com.platform.tagquery.util.SignatureUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
@@ -35,10 +38,13 @@ public class AuthService {
 
     private final AppKeyMapper appKeyMapper;
     private final AppKeyDataSourceMapper authMapper;
+    private final LogService logService;
 
-    public AuthService(AppKeyMapper appKeyMapper, AppKeyDataSourceMapper authMapper) {
+    public AuthService(AppKeyMapper appKeyMapper, AppKeyDataSourceMapper authMapper,
+                       LogService logService) {
         this.appKeyMapper = appKeyMapper;
         this.authMapper = authMapper;
+        this.logService = logService;
     }
 
 
@@ -93,14 +99,56 @@ public class AuthService {
      *
      * ⚡ 性能：①②④ 各一次主键/索引查询，毫秒级；③ 是纯 CPU 计算。
      *    后续 QPS 高了可以把 AppKey 信息缓存到 Redis（TTL 5 分钟），Day 9 优化项。
+     *
+     * 📖 每道防线失败时记录对应日志（PDF 3.5）：①②③ → auth_failure_log；
+     *    ④ 数据源授权失败 → authz_failure_log（权限失败是独立日志类型）。
      */
 
     public AppKey authenticate(String appKey,long timestamp , List<String> ids,
                                String dataSourceId,String signature){
-        AppKey entity = validateAppKey(appKey);
-        validateTimestamp(timestamp);
-        validateSignature(appKey, timestamp, ids, dataSourceId, signature,entity.getAppSecret());
-        checkDataSourceAuth(entity.getId(), dataSourceId);
+        String sourceIp = currentSourceIp();
+
+        AppKey entity;
+        try {
+            entity = validateAppKey(appKey);              // ①
+        } catch (BizException e) {
+            logService.logAuthFailure(appKey, null, null, "AppKey 不存在或已停用", sourceIp);
+            throw e;
+        }
+        try {
+            validateTimestamp(timestamp);                 // ②
+        } catch (BizException e) {
+            logService.logAuthFailure(appKey, null, false, "时间戳过期", sourceIp);
+            throw e;
+        }
+        try {
+            validateSignature(appKey, timestamp, ids, dataSourceId, signature,entity.getAppSecret()); // ③
+        } catch (BizException e) {
+            logService.logAuthFailure(appKey, false, true, "签名校验失败", sourceIp);
+            throw e;
+        }
+        try {
+            checkDataSourceAuth(entity.getId(), dataSourceId);   // ④
+        } catch (BizException e) {
+            logService.logAuthzFailure(appKey, dataSourceId, false, "数据源未授权", sourceIp);
+            throw e;
+        }
         return entity;
+    }
+
+    /** 取当前请求的来源 IP（由 RequestIdFilter 塞入请求属性） */
+    private String currentSourceIp() {
+        try {
+            ServletRequestAttributes attrs =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                Object ip = attrs.getRequest().getAttribute(RequestIdFilter.ATTR_SOURCE_IP);
+                if (ip != null) {
+                    return ip.toString();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 }

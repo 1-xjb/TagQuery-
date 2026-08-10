@@ -1,0 +1,17 @@
+<!-- 📖 邮件模板：数据同步完成通知（Day 8） -->
+<html><body>
+<h3>【联合计算中心】实时标签服务数据同步完成通知</h3>
+<p>任务概况 客户：<span th:text="${customerName}"></span>；
+   触发方式：<span th:text="${triggerType}"></span>；
+   S3 地址：<span th:text="${s3Path}"></span>；
+   目标分区：<span th:text="${partition}"></span>；
+   任务开始时间：<span th:text="${startTime}"></span>；
+   任务结束时间：<span th:text="${endTime}"></span>；任务状态：完成。</p>
+<p>本次数据情况 文件数：<span th:text="${fileCount}"></span>；
+   文件总大小：<span th:text="${fileSize}"></span>；
+   ID 数量：<span th:text="${idCount}"></span>。</p>
+<p>版本结果 生成版本号：<span th:text="${versionId}"></span>；
+   版本状态：<span th:text="${versionStatus}"></span>。</p>
+<p>与上次数据对比 文件总大小变化：<span th:text="${fileSizeChange}"></span>；
+   ID 数量变化：<span th:text="${idCountChange}"></span>。</p>
+</body></html>

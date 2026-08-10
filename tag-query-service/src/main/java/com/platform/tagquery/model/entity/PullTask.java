@@ -18,7 +18,8 @@ public class PullTask {
 
     private String s3FullPath;
 
-    private String partition;
+    /** 目标分区（对应列 partition_name —— partition 是 MySQL 8.0+ 保留字，V1 已改名） */
+    private String partitionName;
 
     /** 触发方式：SCHEDULED / MANUAL */
     private String triggerType;

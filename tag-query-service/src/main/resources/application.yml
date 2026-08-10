@@ -21,7 +21,7 @@ spring:
   redis:
     host: localhost
     port: 6379
-    timeout: 5000ms
+    timeout: 500ms            # ⚡ 单条命令超时（Day 4）：P99 秒级预算下单命令不能超 500ms
     lettuce:
       pool:
         max-active: 50
@@ -33,6 +33,19 @@ spring:
     enabled: true                     # 开启 Flyway
     locations: classpath:db/migration # SQL 脚本位置
     baseline-on-migrate: true         # 对已有数据库也能用
+
+  # --- 邮件（Day 8）---
+  # 🔐 账号密码用环境变量注入，永不进 git；本地不配则邮件不发送（notify.receivers 为空）
+  mail:
+    host: smtp.exmail.qq.com
+    port: 465
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASS:}
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
 # --- MyBatis-Plus 配置 ---
 mybatis-plus:
@@ -59,3 +72,21 @@ logging:
   level:
     com.platform.tagquery: DEBUG       # 自己代码的日志级别
     org.mybatis: INFO                  # MyBatis 执行的 SQL
+
+# --- S3 配置（Day 5）---
+# 🔐 本地 MinIO 用 minioadmin/minioadmin；生产必须用环境变量注入：access-key: ${S3_AK}
+s3:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  region: us-east-1
+
+tag:
+  pull:
+    local-temp-dir: ./data/pull_tmp     # 拉取文件的本地暂存目录
+  query:
+    max-batch-size: 1000                # 单次查询 ID 上限
+
+# --- 通知收件人（Day 8），本地留空则不发送邮件 ---
+notify:
+  receivers: ${NOTIFY_RECEIVERS:}

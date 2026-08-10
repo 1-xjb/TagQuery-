@@ -1,0 +1,9 @@
+<!-- 📖 邮件模板：数据集成失败告警（Day 8） -->
+<html><body>
+<h3>【联合计算中心】实时标签服务数据集成失败告警</h3>
+<p>数据源：<span th:text="${dataSourceId}"></span>；
+   拉取任务ID：<span th:text="${pullTaskId}"></span>；
+   总记录数：<span th:text="${totalRecords}"></span>；
+   有效记录数：<span th:text="${validRecords}"></span>。</p>
+<p>失败原因：<span th:text="${failureReason}"></span></p>
+</body></html>

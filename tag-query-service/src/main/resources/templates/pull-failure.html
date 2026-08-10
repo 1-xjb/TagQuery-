@@ -1,0 +1,10 @@
+<!-- 📖 邮件模板：拉取失败告警（Day 8） -->
+<html><body>
+<h3>【联合计算中心】实时标签服务拉取失败告警</h3>
+<p>客户：<span th:text="${customerName}"></span>；
+   数据源：<span th:text="${dataSourceId}"></span>；
+   触发方式：<span th:text="${triggerType}"></span>；
+   目标分区：<span th:text="${partition}"></span>；
+   任务ID：<span th:text="${taskId}"></span>。</p>
+<p>失败原因：<span th:text="${failureReason}"></span></p>
+</body></html>
